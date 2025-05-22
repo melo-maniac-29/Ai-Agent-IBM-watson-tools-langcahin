@@ -1,9 +1,12 @@
 schema
   @sdl(
     files: [
-      "wikipedia/index.graphql"
+      "youtube_transcript/index.graphql"
       "tools.graphql"
+      "curl/index.graphql"
       "google_books/index.graphql"
+      "wikipedia/index.graphql"
+      "curl-01/index.graphql"
     ]
   ) {
   query: Query

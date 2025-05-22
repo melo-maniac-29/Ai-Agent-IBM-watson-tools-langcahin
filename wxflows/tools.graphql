@@ -1,12 +1,61 @@
+# [[ tool definition example ]]
+# .
+# Flows Engine allows creating LLM "tools" from parts of your GraphQL schema. To
+# do that, add a field to the Query type, using the example below and replacing
+# placeholders with something relevant for your tool.
+# .
+# extend type Query {
+#   tool_name_definition: TC_GraphQL # <-- replace tool_name with something
+#     @supplies(query: "tc_tools")
+#     @materializer(
+#       query: "tc_graphql_tool"
+#       arguments: [
+#         { name: "name", const: "[an internal tool name, e.g. 'wikipedia']" }
+#         { name: "description", const: "[a description that helps LLMs to use this tool, e.g. 'Retrieve information from Wikipedia']" }
+#         { name: "fields", const: "[a regex defining a subset of fields in this GraphQL schema, e.g. 'search|page' or 'mytool_.*']" }
+#       ]
+#     )
+# }
+# [[ end of tool definition example ]]
+
 extend type Query {
-  wikipediaTool: TC_GraphQL
+  youtube_transcript: TC_GraphQL
     @supplies(query: "tc_tools")
     @materializer(
       query: "tc_graphql_tool"
       arguments: [
-        { name: "name", const: "wikipedia" }
-        { name: "description", const: "Retrieve information from Wikipedia." }
-        { name: "fields", const: "search|page" }
+        { name: "name", const: "youtube_transcript" }
+        {
+          name: "description"
+          const: "Retrieve transcripts for a given YouTube video. Provide videoUrl in the format https://www.youtube.com/watch?v=VIDEO_ID. Returns the video title and timestamped captions."
+        }
+        { name: "fields", const: "transcript" }
+      ]
+    )
+  curl_comments: TC_GraphQL
+    @supplies(query: "tc_tools")
+    @materializer(
+      query: "tc_graphql_tool"
+      arguments: [
+        { name: "name", const: "curl_comments" }
+        {
+          name: "description"
+          const: "Retrieve comments from a dummy JSON API. Returns a list of comments with user information, including body, likes, postId, and user details (username, fullName)."
+        }
+        { name: "fields", const: "dummyCommentsQuery" }
+      ]
+    )
+  customer_data: TC_GraphQL
+    @supplies(query: "tc_tools")
+    @materializer(
+      query: "tc_graphql_tool"
+      arguments: [
+        { name: "name", const: "customer_data" }
+        {
+          name: "description"
+          const: "Retrieve customer information including their address and order history. Returns customer details like name, email, address, and past orders with shipping information. To search for customer with id: 1, use the curl url followed by /1 i.e. https://api.example.com/customers/1"
+        }
+        { name: "fields", const: "myQuery" }
       ]
     )
   google_books: TC_GraphQL
@@ -20,6 +69,16 @@ extend type Query {
           const: "Retrieve information from Google Books. Find books by search string, for example to search for Daniel Keyes 'Flowers for Algernon' use q: 'intitle:flowers+inauthor:keyes'"
         }
         { name: "fields", const: "books|book" }
+      ]
+    )
+  wikipedia: TC_GraphQL
+    @supplies(query: "tc_tools")
+    @materializer(
+      query: "tc_graphql_tool"
+      arguments: [
+        { name: "name", const: "wikipedia" }
+        { name: "description", const: "Retrieve information from Wikipedia." }
+        { name: "fields", const: "search|page" }
       ]
     )
 }
