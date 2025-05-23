@@ -14,12 +14,21 @@ import {
 } from "@langchain/langgraph";
 import { MemorySaver } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import wxflows from "@wxflows/sdk/langchain";
+// Remove unused import
+// import wxflows from "@wxflows/sdk/langchain";
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
 import SYSTEM_MESSAGE from "@/constants/systemMessage";
+import { getWxFlowsTools } from "./initializedClient";
+
+// Define proper tool type
+type Tool = {
+  name: string;
+  description: string;
+  [key: string]: unknown;
+};
 
 // Validate required environment variables (server-side only)
 if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
@@ -41,53 +50,6 @@ const trimmer = trimMessages({
   allowPartial: false,
   startOn: "human",
 });
-
-// Connect to wxflows
-const toolClient = new wxflows({
-  endpoint: process.env.WXFLOWS_ENDPOINT || "",
-  apikey: process.env.WXFLOWS_APIKEY,
-});
-
-// Retrieve the tools
-const tools = await toolClient.lcTools;
-const toolNode = new ToolNode(tools);
-
-// Connect to the LLM provider with better tool instructions
-const initialiseModel = () => {
-  // Try different model names until one works
-  const modelName = tryModelNames();
-  
-  const model = new ChatGoogleGenerativeAI({
-    model: modelName,
-    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
-    temperature: 0.1,
-    maxOutputTokens: 2048, // Reduced to help stay within quota limits
-    streaming: true,
-    callbacks: [
-      {
-        handleLLMStart: async () => {
-          console.log("🤖 Starting LLM call");
-        },
-        handleLLMEnd: async (output) => {
-          console.log("🤖 End LLM call");
-          const usage = output.llmOutput?.usage;
-          if (usage) {
-            console.log("📊 Token Usage:", {
-              input_tokens: usage.input_tokens,
-              output_tokens: usage.output_tokens,
-              total_tokens: usage.input_tokens + usage.output_tokens,
-            });
-          }
-        },
-        handleLLMError: async (err) => {
-          console.error("🔴 LLM Error:", err);
-        }
-      },
-    ],
-  }).bindTools(tools);
-
-  return model;
-};
 
 // Helper function to choose a model name based on compatibility
 function tryModelNames() {
@@ -125,9 +87,51 @@ function shouldContinue(state: typeof MessagesAnnotation.State) {
   return END;
 }
 
+// Connect to the LLM provider with better tool instructions
+const initialiseModel = async (tools: Tool[]) => {
+  // Try different model names until one works
+  const modelName = tryModelNames();
+  
+  const model = new ChatGoogleGenerativeAI({
+    model: modelName,
+    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY,
+    temperature: 0.1,
+    maxOutputTokens: 2048,
+    streaming: true,
+    callbacks: [
+      {
+        handleLLMStart: async () => {
+          console.log("🤖 Starting LLM call");
+        },
+        handleLLMEnd: async (output) => {
+          console.log("🤖 End LLM call");
+          const usage = output.llmOutput?.usage;
+          if (usage) {
+            console.log("📊 Token Usage:", {
+              input_tokens: usage.input_tokens,
+              output_tokens: usage.output_tokens,
+              total_tokens: usage.input_tokens + usage.output_tokens,
+            });
+          }
+        },
+        handleLLMError: async (err) => {
+          console.error("🔴 LLM Error:", err);
+        }
+      },
+    ],
+  }).bindTools(tools);
+
+  return model;
+};
+
 // Define a new graph
-const createWorkflow = () => {
-  const model = initialiseModel();
+const createWorkflow = async () => {
+  // Get tools from the initialized client
+  const tools = await getWxFlowsTools();
+  const toolNode = new ToolNode(tools);
+  
+  // Initialize model with tools
+  const model = await initialiseModel(tools);
 
   return new StateGraph(MessagesAnnotation)
     .addNode("agent", async (state) => {
@@ -217,7 +221,7 @@ export async function submitQuestion(messages: BaseMessage[], chatId: string) {
   const cachedMessages = addCachingHeaders(messages);
 
   // Create workflow with chatId and onToken callback
-  const workflow = createWorkflow();
+  const workflow = await createWorkflow();
 
   // Create a checkpoint to save the state of the conversation
   const checkpointer = new MemorySaver();

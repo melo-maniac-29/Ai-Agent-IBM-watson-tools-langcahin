@@ -4,30 +4,32 @@ import { api } from "@/convex/_generated/api";
 import { getConvexClient } from "@/lib/convex";
 import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import { Metadata } from "next";
 
-interface ChatPageProps {
-  params: {
-    chatid: string; // Changed type to string instead of Id<"chats">
-  };
-}
+export const metadata: Metadata = {
+  title: "Chat",
+  description: "Chat with AI assistant",
+};
 
-// Make this a Server Component that properly handles async operations
-export default async function ChatPage({ params }: ChatPageProps) {
-  // Use Promise.all to await all async operations in parallel for better performance
+// Next.js 15 requires specific parameter typing for page components
+export default async function ChatPage({
+  params,
+}: {
+  params: { chatid: string };
+}) {
   const [authResult, convex] = await Promise.all([
     auth(),
     getConvexClient(),
   ]);
 
   const { userId } = authResult;
-  const chatId = params.chatid as Id<"chats">; // Cast string to Convex ID type after params is processed
+  const chatId = params.chatid as Id<"chats">;
 
   if (!userId) {
     redirect("/");
   }
 
   try {
-    // Use Promise.all again to parallelize these queries
     const [chat, initialMessages] = await Promise.all([
       convex.query(api.chats.getChat, {
         id: chatId,
