@@ -113,6 +113,10 @@ The project is configured for deployment on Vercel:
 
 - **Build Failures**: Ensure all dependencies are correctly installed and environment variables are properly set.
 
+## Security
+
+Security is a top priority for this application. For a complete overview of our security practices, vulnerability reporting procedures, and compliance information, please refer to the [SECURITY.md](./SECURITY.md) file.
+
 ## Contributing
 
 1. Fork the repository
@@ -123,4 +127,4 @@ The project is configured for deployment on Vercel:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
