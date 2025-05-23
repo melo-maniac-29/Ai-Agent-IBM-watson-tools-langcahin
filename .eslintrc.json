@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "files": ["lib/langgraph.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ]
+}

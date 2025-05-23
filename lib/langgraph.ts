@@ -239,13 +239,13 @@ export async function submitQuestion(messages: BaseMessage[], chatId: string) {
         }
       );
       return stream;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("🚨 Error streaming events:", error);
       
       // Check if this is a rate limit error
       if (retries < maxRetries && 
-          error?.message?.includes("429") && 
-          error?.message?.includes("Too Many Requests")) {
+          (error as Error)?.message?.includes("429") && 
+          (error as Error)?.message?.includes("Too Many Requests")) {
         
         retries++;
         const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s
@@ -255,7 +255,7 @@ export async function submitQuestion(messages: BaseMessage[], chatId: string) {
       }
       
       // If not a rate limit error or we've exhausted retries, re-throw
-      throw new Error(`Failed to get response: ${error?.message || "Unknown error"}`);
+      throw new Error(`Failed to get response: ${(error as Error)?.message || "Unknown error"}`);
     }
   }
 }
