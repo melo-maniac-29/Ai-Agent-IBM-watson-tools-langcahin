@@ -7,14 +7,12 @@ import { auth } from "@clerk/nextjs/server";
 
 interface ChatPageProps {
   params: {
-    chatId: Id<"chats">;
+    chatid: Id<"chats">; // Changed from chatId to chatid to match the URL parameter
   };
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { chatId } = await params;
-
-  // Get user authentication
+  const chatId = params.chatid; // Changed from params.chatId to params.chatid
   const { userId } = await auth();
 
   if (!userId) {
@@ -22,23 +20,17 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   try {
-    // Get Convex client and fetch chat and messages
     const convex = getConvexClient();
 
-    // Check if chat exists & user is authorized to view it
     const chat = await convex.query(api.chats.getChat, {
-      id: chatId,
+      id: chatId, // This was likely undefined before
       userId,
     });
 
     if (!chat) {
-      console.log(
-        "⚠️ Chat not found or unauthorized, redirecting to dashboard"
-      );
       redirect("/dashboard");
     }
 
-    // Get messages
     const initialMessages = await convex.query(api.messages.list, { chatId });
 
     return (
