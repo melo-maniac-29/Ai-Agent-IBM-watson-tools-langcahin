@@ -1,4 +1,4 @@
-# YT-AI-Agent
+# AI-Agent
 
 A Next.js application that uses AI to process and interact with various content sources including YouTube and wxflows.
 
