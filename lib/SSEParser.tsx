@@ -27,14 +27,38 @@ export const createSSEParser = () => {
         if (data === SSE_DONE_MESSAGE) return { type: StreamMessageType.Done };
 
         try {
+          // Handle empty data case
+          if (!data.trim()) {
+            return {
+              type: StreamMessageType.Error,
+              error: "Empty SSE data received",
+            };
+          }
+
           const parsed = JSON.parse(data) as StreamMessage;
+
+          // Additional validation to ensure parsed data has the required type
+          if (!parsed || typeof parsed !== "object") {
+            return {
+              type: StreamMessageType.Error,
+              error: "Malformed SSE message structure",
+            };
+          }
+
           return Object.values(StreamMessageType).includes(parsed.type)
             ? parsed
-            : null;
-        } catch {
+            : {
+                type: StreamMessageType.Error,
+                error: `Unknown message type: ${parsed.type}`,
+                details: parsed,
+              };
+        } catch (err) {
           return {
             type: StreamMessageType.Error,
-            error: "Failed to parse SSE message",
+            error: `Failed to parse SSE message: ${
+              err instanceof Error ? err.message : "Unknown error"
+            }`,
+            rawData: data,
           };
         }
       })
