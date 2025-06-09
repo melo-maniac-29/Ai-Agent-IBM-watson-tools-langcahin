@@ -33,6 +33,7 @@ This project is built using Next.js 15 and integrates several AI technologies in
 - Node.js 18+ installed
 - PNPM package manager
 - API keys for various services (Clerk, OpenAI, etc.)
+- 
 
 ### Installation
 
