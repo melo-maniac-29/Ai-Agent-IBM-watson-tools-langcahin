@@ -26,6 +26,7 @@ This project is built using Next.js 15 and integrates several AI technologies in
 - **Security**: TLS encryption, CSRF protection, rate limiting
 - **Styling**: Tailwind CSS with Radix UI components
 
+
 ## Getting Started
 
 ### Prerequisites
