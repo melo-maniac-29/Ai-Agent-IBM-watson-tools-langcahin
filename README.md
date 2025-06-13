@@ -6,6 +6,7 @@ A Next.js application that uses AI to process and interact with various content 
 
 This project is built using Next.js 15 and integrates several AI technologies including LangChain, LangGraph, and various models from Anthropic, OpenAI and Google's Generative AI. It provides an interface for AI-powered interactions with multimedia content across different platforms.
 
+
 ## Features
 
 - AI-powered content analysis from multiple sources
